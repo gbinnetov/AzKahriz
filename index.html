@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kahriz Atlas</title>
+    <link rel="stylesheet" href="Content/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://js.arcgis.com/4.13/esri/themes/light/main.css" />
+    <style>img[alt="www.000webhost.com"]{display:none;}</style>
+    <script>
+        dojoConfig = {
+            paths: { Scripts: location.origin + "/Scripts/ArcgisTools" },
+            parseOnLoad: true,
+            async: 1
+        };
+    </script>
+
+    <script src="Scripts/jquery-3.4.1.js"></script>
+    <script src="Scripts/bootstrap.min.js"></script>
+    <script src="https://js.arcgis.com/4.13/"></script>
+</head>
+
+<body style="margin:0px;" onload="load()">
+    <div>
+        <style>
+            /* .esri-zoom{
+               display: none;
+           } */
+        </style>
+        <style>
+            #map_canvas {
+                height: 100%;
+                width: 100%;
+                position: absolute;
+            }
+
+            .esri-attribution {
+                display: none;
+            }
+        </style>
+
+        <style>
+            .border {
+
+                position: absolute;
+                cursor: e-resize;
+                width: 9px;
+                right: 1px;
+                top: 0;
+                height: 100%;
+            }
+
+
+
+            .action-button {
+                width: 32px;
+                height: 32px;
+                border: 1px solid #ffffff;
+                text-align: center;
+                background-color: white;
+                cursor: pointer;
+            }
+
+            .action-button:hover,
+            .action-button:focus {
+                background: #0079c1;
+                color: white;
+            }
+
+            .tableFixHead {
+                overflow-y: auto;
+                height: 200px;
+            }
+
+            .tableFixHead thead th {
+                position: sticky;
+                top: 0;
+            }
+
+            /* Just common table stuff. Really. */
+            table {
+                border-collapse: collapse;
+                width: 100%;
+            }
+
+            th,
+            td {
+                padding: 8px 16px;
+            }
+
+            th {
+                background: #eee;
+            }
+
+            /************************************  map  Screen   ********************************/
+
+
+
+            /*.action-button {
+                border: 1px solid;
+                text-align: center;
+                background-color: white;
+                cursor: pointer;
+            }*/
+
+            #screenshotDiv {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                text-align: center;
+                background-color: rgba(255, 255, 255, 0.8);
+            }
+
+            .hide {
+                display: none;
+            }
+
+            #screenImg {
+                border: 10px solid white;
+                box-shadow: 2px 2px 5px 0 rgba(0, 0, 0, 0.5);
+            }
+
+            #screenshotDiv>* {
+                margin: 0.5em;
+            }
+
+            .screenshotCursor {
+                cursor: crosshair;
+            }
+
+
+
+            /*.action-button:hover,
+              .action-button:focus {
+                background: #0079c1;
+                color: white;
+              }*/
+
+            #maskDiv {
+                position: absolute;
+                background: rgba(255, 51, 0, 0.1);
+                border: 2px dashed rgb(255, 51, 0);
+            }
+
+            .searchContainer {
+                position: fixed;
+                top: 10px;
+                left: 62px;
+                background-color: white;
+                height: 136px;
+                box-shadow: 0px 0px 20px #888888;
+                border-radius: 5px;
+                padding: 10px;
+                color: gray;
+                min-width: 462px;
+                width: 462px;
+                transition: background-color 0.5s;
+                -webkit-transition: background-color 0.5s;
+                -moz-transition: background-color 0.5s;
+                -ms-transition: background-color 0.5s;
+                -o-transition: background-color 0.5s;
+                -o-transition: background-color 0.5s;
+            }
+
+            .imglogo {
+                position: fixed;
+                bottom: 30px;
+                right: 62px;
+                background: rgba(255, 255, 255, 0.1)
+            }
+
+            .infoContainer {
+                position: fixed;
+                bottom: 30px;
+                left: 15px;
+                background-color: white;
+                height: 360px;
+                box-shadow: 0px 0px 20px #888888;
+                border-radius: 5px;
+                padding: 10px;
+                color: gray;
+                min-width: 530px;
+                width: 530px;
+                transition: background-color 0.5s;
+                -webkit-transition: background-color 0.5s;
+                -moz-transition: background-color 0.5s;
+                -ms-transition: background-color 0.5s;
+                -o-transition: background-color 0.5s;
+            }
+
+            .divMainIcon {
+                position: absolute;
+                top: 10px;
+                left: 15px;
+                font-size: 18px;
+                color: rgb(151, 165, 173);
+                background-size: contain;
+                background-repeat: no-repeat;
+                height: 40px;
+            }
+
+            .infodivMainIcon {
+                position: absolute;
+                top: 10px;
+                right: 22px;
+                font-size: 18px;
+                color: rgb(151, 165, 173);
+                background-size: contain;
+                background-repeat: no-repeat;
+                height: 40px;
+            }
+
+            .divOpenAdvancedSearch {
+                /*position: absolute;*/
+                padding-top: 16px;
+                bottom: 5px;
+                left: 10px;
+                right: 15px;
+            }
+
+            .radio-inline,
+            .checkbox-inline {
+                display: inline-block;
+                padding-left: 20px;
+                margin-bottom: 0;
+                font-weight: normal;
+                vertical-align: middle;
+                cursor: pointer;
+            }
+
+            .radio-inline+.radio-inline,
+            .checkbox-inline+.checkbox-inline {
+                margin-top: 0;
+                margin-left: 10px;
+            }
+
+            #divMessager {
+                margin-top: 64px;
+            }
+
+
+            #hrefOpenAdvancedSearch {
+                float: right;
+                /*font-size: 18px;
+                margin-right: 0px;
+                margin-bottom: 5px;*/
+            }
+
+            .divOpenAdvancedSearch a {
+                color: rgb(151, 165, 173);
+                text-decoration: underline;
+            }
+
+            /************************************  END  map  Screen   ********************************/
+
+            .ui-autocomplete.ui-front.ui-menu.ui-widget.ui-widget-content {
+                width: 462px !important;
+                max-height: 462px !important;
+            }
+
+            .navigationContainer.dropdown-menu,
+            .ui-autocomplete {
+                max-height: 650px;
+            }
+
+            .dropdown-menu,
+            .ui-autocomplete {
+                overflow-y: scroll;
+                max-height: 800px;
+                max-width: 521px;
+            }
+
+            .dropdown-menu,
+            .ui-autocomplete {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                z-index: 1000;
+                /*display: none;*/
+                float: left;
+                min-width: 160px;
+                padding: 5px 0;
+                margin: 2px 0 0;
+                font-size: 13px;
+                background-color: #b91212;
+                text-align: left;
+                list-style: none;
+                -webkit-background-clip: padding-box;
+                background-clip: padding-box;
+                border: 1px solid #dfdfdf;
+                border-radius: 2px;
+                -webkit-box-shadow: 0 2px 6px rgba(0, 0, 0, .1);
+                box-shadow: 0 2px 6px rgba(0, 0, 0, .1);
+            }
+
+            .ui-menu {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+                display: block;
+                outline: none;
+            }
+
+            .ui-autocomplete {
+                cursor: default;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                z-index: 1000;
+                /*display: none;*/
+                float: left;
+                min-width: 160px;
+                padding: 5px 0;
+                margin: 2px 0 0;
+                font-size: 14px;
+                background-color: #fff;
+                text-align: left;
+                list-style: none;
+                -webkit-background-clip: padding-box;
+                background-clip: padding-box;
+                border: 1px solid #dfdfdf;
+                border-radius: 3px;
+                -webkit-box-shadow: 0 2px 6px rgba(0, 0, 0, .1);
+                box-shadow: 0 2px 6px rgba(0, 0, 0, .1);
+            }
+
+            .dropdown-menu>li>a,
+            .ui-menu .ui-menu-item {
+                display: block;
+                font-size: 13px;
+                padding: 5px 15px;
+                clear: both;
+                font-weight: normal;
+                line-height: 1.42857143;
+                color: #333;
+                white-space: nowrap;
+            }
+
+            .ui-menu .ui-menu-item {
+                cursor: pointer;
+                min-height: 0;
+                list-style-image: url(data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7);
+            }
+
+            .each {
+                border-bottom: 1px solid #555;
+                padding: 3px 0;
+            }
+
+            .acItem .name {
+                font-size: 14px;
+                color: #1d82aa;
+                font-family: Arial, Helvetica, sans-serif;
+            }
+
+            .acItem .desc {
+                font-size: 10px;
+                font-family: Arial, Helvetica, sans-serif;
+                color: #da5555;
+            }
+
+            .acItem .descOLD {
+                font-size: 10px;
+                font-family: Arial, Helvetica, sans-serif;
+                color: #555;
+            }
+
+        
+        </style>
+
+        <div id="map_canvas">
+            <div id="Si3317" class="searchContainer" style="display: none;">
+
+                <div class="divMainIcon"><span class="navIcon icon-directions"></span>&nbsp; Axtarış / Search</div>
+
+                <div class="form-inline" style="margin-top: 28px;" id="doSearchFrm">
+                    <input type="search" class="form-control ui-autocomplete-input" style="width:500px!important;"
+                        placeholder="Axtarış / Search" autocomplete="off" id="searchInput">
+                    <input autocomplete="off" type="hidden" id="currentViewCenterLat" value="41.58383750970602">
+                    <input autocomplete="off" type="hidden" id="currentViewCenterLong" value="46.299260854400174">
+                </div>
+
+                <div class="divOpenAdvancedSearch">
+                    <select class="form-control form-control-sm" id="hrefOpenAdvancedSearch" style="max-width:170px;">
+                        <option value="KAHRIZ_AZE">Kəhrizin adı</option>
+                        <option value="KAHRIZ_ENG">Kahriz name</option>
+                        <option value="INDEX">Index</option>
+                    </select>
+                </div>
+
+
+
+                <!-- <select class="form-control form-control-sm" id="searchselectlayer" style="max-width:170px">
+                    <option value="value">Seçim edin</option>
+                    <option value="point" id="searchPoint" style="display: block;">point</option>
+                    <option value="line" id="searchLine" style="display: block;">line</option>
+
+                </select> -->
+                <div id="divMessager"></div>
+                <ul class="ui-autocomplete ui-front ui-menu ui-widget ui-widget-content" id="ui-id-1" tabindex="0"
+                    style="display: none;">
+                    <li class="each ui-menu-item" id="ui-id-4" tabindex="-1">
+                        <div class="acItem">
+                            <span class="name">Başlıq</span><br>
+                            <span class="desc">Ünvan</span><br>
+                            <span class="descOLD">Qeyd</span>
+                        </div>
+                    </li>
+                </ul>
+
+            </div>
+
+
+            <div id="infodiv" class="infoContainer " style="display:none;">
+
+                <div class="divMainIcon"><span class="navIcon icon-directions"></span>&nbsp; Məlumat</div>
+                <div class="infodivMainIcon"><span class="navIcon icon-directions" id="spanModalClose"
+                        style="cursor:pointer;">&nbsp; X</span></div>
+
+                <div class="form-inline" style="margin-top: 28px;" id="doSearchFrm">
+
+                    <hr style="width: 100%;color: red;margin-bottom: 0.5rem !important;" />
+                    <div class="col-md-12" id="tableInfoExport">
+
+                        <div class="tableFixHead" id="infoTable" style="display: block  ;">
+                            <table id="infoTable">
+                                <thead>
+                                    <tr>
+                                        <th>S/s</th>
+                                        <th>Yanvar</th>
+                                        <th>Fevral</th>
+                                        <th>Mart</th>
+                                        <th>Aprel</th>
+                                        <th>May</th>
+                                        <th>Iyun</th>
+                                        <th>Iyul</th>
+                                        <th>Avqust</th>
+                                        <th>Sentyabr</th>
+                                        <th>Oktyabr</th>
+                                        <th>Noyabr</th>
+                                        <th>Dekabr</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>S/s</td>
+                                        <td>Yanvar</td>
+                                        <td>Fevral</td>
+                                        <td>Mart</td>
+                                        <td>Aprel</td>
+                                        <td>May</td>
+                                        <td>Iyun</td>
+                                        <td>Iyul</td>
+                                        <td>Avqust</td>
+                                        <td>Sentyabr</td>
+                                        <td>Oktyabr</td>
+                                        <td>Noyabr</td>
+                                        <td>Dekabr</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+
+
+            <button id="searchbtn" class="action-button esri-widget esri-icon-search" aria-label="Axtarış / Search"
+                title="Axtarış / Search"></button>
+
+            <button id="drawpolyline" class="action-button esri-icon-measure-line esri-component"
+                aria-label="Məsafəni ölç / Measures" title="Məsafəni ölç / Measures"></button>
+            <button id="draw-polygon" class="action-button esri-icon-measure-area esri-component"
+                aria-label="Sahəni ölç / Draw area" title="Sahəni ölç / Draw area"></button>
+            <!-- <div id="draw-polygon" class="esri-widget--button esri-widget esri-interactive"
+                title="Draw and measure polygon">
+                <span class="esri-icon-polygon"></span>
+            </div> -->
+
+            <img src="logo-03.png" class="imglogo" style="width: 150px !important;">
+            <img src="logo3.png" class="imglogo" style="right: 212px !important; width: 165px  !important;">
+
+        </div>
+
+
+
+        <script src="Scripts/arcmap.js"></script>
+        <script src="//cdn.rawgit.com/rainabba/jquery-table2excel/1.1.0/dist/jquery.table2excel.min.js">
+        </script>
+        <script>
+
+            var myoffset;
+            function resizeE(elem) {
+                var borderDiv = document.createElement("div");
+                borderDiv.className = "border";
+                borderDiv.addEventListener("mousedown", myresize = function myrsize(e) {
+                    myoffset = e.clientX - (document.getElementById(elem).offsetLeft + parseInt(window.getComputedStyle(document.getElementById(elem)).getPropertyValue("width")));
+                    window.addEventListener("mouseup", mouseUp);
+                    document.addEventListener("mousemove", mouseMove = function mousMove(e) {
+                        document.getElementById(elem).style.width = `${e.clientX - myoffset - document.getElementById(elem).offsetLeft}px`;
+                    });
+                });
+                document.getElementById(elem).appendChild(borderDiv);
+            }
+
+            function mouseUp() {
+                document.removeEventListener("mousemove", mouseMove);
+                window.removeEventListener("mouseup", mouseUp);
+            }
+
+            function load() {
+                resizeE("infodiv");
+
+                $(".esri-home").attr("aria-label", "Əsas / Home");
+                $(".esri-home").attr("title", "Əsas / Home");
+
+                $(".esri-zoom")[0].children[0].title = "Yaxınlaş / Zoom in";
+                $(".esri-zoom")[0].children[1].title = "Uzaqlaş / Zoom out";
+
+                $(".esri-icon-layers")[0].parentNode.title = "Legenda / Legend ";
+
+                $(".esri-icon-basemap")[0].parentNode.title = "Atlıq xəritə / Basemap";
+
+                $(".esri-icon-right-triangle-arrow").css("display", "none")
+
+              
+
+
+                // console.log($(".esri-legend__layer-cell--info"))
+
+                // $(".esri-legend__layer-cell--info")[0].innerHTML = "Active / Fəaliyyətdə olan";
+                // $(".esri-legend__layer-cell--info")[1].innerHTML = "Passive / Fəaliyyətdə olmayan";
+                // $(".esri-legend__layer-cell--info")[4].innerHTML = "Son bəlli quyu / Last know well";
+                // $(".esri-legend__layer-cell--info")[5].innerHTML = "Kəhriz çıxışı / Exit point";
+                // $(".esri-legend__layer-cell--info")[6].innerHTML = "Baxış quyusu / Well";
+
+                // $(".esri-icon-visible").on("click", function () {
+                //     console.log( $(".esri-legend__layer-cell--info"))
+                //     $(".esri-legend__layer-cell--info")[0].innerHTML = "Active / Fəaliyyətdə olan";
+                //     $(".esri-legend__layer-cell--info")[1].innerHTML = "Passive / Fəaliyyətdə olmayan";
+                //     $(".esri-legend__layer-cell--info")[4].innerHTML = "Son bəlli quyu / Last know well";
+                //     $(".esri-legend__layer-cell--info")[5].innerHTML = "Kəhriz çıxışı / Exit point";
+                //     $(".esri-legend__layer-cell--info")[6].innerHTML = "Baxış quyusu / Well";
+                // })
+            }
+
+        </script>
+    </div>
+
+</body>
+
+</html>
